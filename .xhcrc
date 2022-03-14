@@ -1,0 +1,19 @@
+{
+    "HID_VID":4302, 
+    "HID_PID":60307,
+    "WorkPos":1,
+    "macros": [
+        {
+            "1":"?\n" 
+        },
+        {
+            "9":"?\n"
+        }
+    ],
+    "ProbeZ": "G91\nG38.2 Z-10 F20\nG90\nG10 L20 P1 Z10\nG91\nG0 Z4\nG90\n",
+    "DryRun": 0,
+    "DryRunButtons": 0,
+    "DryRunJog": 0,
+    "DruRunProbeZ": 0,
+    "LogStream": 1
+}
