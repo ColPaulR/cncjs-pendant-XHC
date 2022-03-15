@@ -64,10 +64,12 @@ function CNCjs_Client_Init(xhc_set_display){
         // Open port
         //
         // Need to connect to port to get GRBL updates?
-        socket.emit('open', options.port, {
-            baudrate: Number(options.baudrate),
-            controllerType: options.controllerType
-        });
+        // var ports;
+        socket.emit('list',null);
+        // socket.emit('open', options.port, {
+        //     baudrate: Number(options.baudrate),
+        //     controllerType: options.controllerType
+        // });
     });
 
     socket.on('error', (err) => {
@@ -83,13 +85,13 @@ function CNCjs_Client_Init(xhc_set_display){
     });
 
     // Ignore raw serialport:open for now
-    // socket.on('serialport:open', function (options) {
-    //     options = options || {};
+    socket.on('serialport:open', function (options) {
+        options = options || {};
 
-    //     console.log('Connected to port "' + options.port + '" (Baud rate: ' + options.baudrate + ')');
+        console.log('Connected to port "' + options.port + '" (Baud rate: ' + options.baudrate + ')');
 
     //     // callback(null, socket);
-    // });
+    });
 
     // Quite on serial port error
     socket.on('serialport:error', function (options) {
@@ -98,22 +100,43 @@ function CNCjs_Client_Init(xhc_set_display){
         // callback(new Error('Error opening serial port "' + options.port + '"'));
     });
 
-    // socket.on('serialport:read', function (data) {
-    //     console.log("Serial port read");
-    //     console.log((data || '').trim());
-    // });
+    socket.on('serialport:read', function (data) {
+        console.log("Serial port read");
+        console.log((data || '').trim());
+    });
 
+    socket.on('serialport:list', function (portlist) {
+        console.log("Serial port list");
+        // Check to see if a port is in use
+        var port_in_use;
+        for (const portitem in portlist) {
+            if (portlist[portitem].inuse) {
+                port_in_use = portlist[portitem].port;
+                break;
+            }
+        }
+
+        // If no port in use is found, default to options.port
+        if (!port_in_use) port_in_use=options.port;
+
+        // baud and controller are required?
+        socket.emit('open', port_in_use, {
+            baudrate: Number(options.baudrate),
+            controllerType: options.controllerType
+        });
+    });
+    
     // Sender
-    // socket.on('sender:status', function(data) {
-    //     console.log('sender:status');
-    //     console.log(data);
-    //     store.sender.status = data;
-    // });
+    socket.on('sender:status', function(data) {
+        // console.log('sender:status');
+        // console.log(data);
+        store.sender.status = data;
+    });
 
 
-    // socket.on('serialport:write', function (data) {
-    //     console.log((data || '').trim());
-    // });
+    socket.on('serialport:write', function (data) {
+        console.log((data || '').trim());
+    });
 
     // Grbl
     socket.on('Grbl:state', function (state) {
