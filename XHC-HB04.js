@@ -85,15 +85,8 @@ socket = io.connect('ws://' + options.socketAddress + ':' + options.socketPort, 
 socket.on('connect', () => {
     console.log('Connected to ' + url);
 
-    // Open port
-    //
-    // Need to connect to port to get GRBL updates?
-    // var ports;
+    // Get list of ports upon connection
     socket.emit('list', null);
-    // socket.emit('open', options.port, {
-    //     baudrate: Number(options.baudrate),
-    //     controllerType: options.controllerType
-    // });
 });
 
 socket.on('error', (err) => {
@@ -113,24 +106,22 @@ socket.on('serialport:open', function (options) {
     options = options || {};
 
     console.log('Connected to port "' + options.port + '" (Baud rate: ' + options.baudrate + ')');
-
-    //     // callback(null, socket);
 });
 
 // Quite on serial port error
 socket.on('serialport:error', function (options) {
     console.log('Serial port error');
     process.exit(1);
-    // callback(new Error('Error opening serial port "' + options.port + '"'));
 });
 
-socket.on('serialport:read', function (data) {
+// socket.on('serialport:read', function (data) {
     // console.log("Serial port read");
     // console.log((data || '').trim());
-});
+// });
 
 socket.on('serialport:list', function (portlist) {
     console.log("Serial port list");
+   
     // Check to see if a port is in use
     for (const portitem in portlist) {
         if (portlist[portitem].inuse) {
@@ -156,13 +147,13 @@ socket.on('serialport:list', function (portlist) {
 //     store.sender.status = data;
 // });
 
-socket.on('serialport:write', function (data) {
-    console.log((data || '').trim());
-});
+// socket.on('serialport:write', function (data) {
+//     console.log((data || '').trim());
+// });
 
 // Grbl
 socket.on('Grbl:state', function (state) {
-    console.log('Grbl:state');
+    // console.log('Grbl:state');
     // console.log(state);
 
     // check to see if the state has changed
@@ -171,7 +162,7 @@ socket.on('Grbl:state', function (state) {
     }
     store.state = state;
     xhc_set_display(state);
-    console.log(state.status.wpos);
+    // console.log(state.status.wpos);
 });
 
 socket.on('Grbl:settings', function (settings) {
@@ -636,8 +627,6 @@ function doJog(myGCode) {
     if (config.DryRunJog) {
         console.log(myGCode);
     } else {
-        console.log(myGCode);
-
         socket.emit("write", port_in_use, myGCode+'\n');
     }
 }
