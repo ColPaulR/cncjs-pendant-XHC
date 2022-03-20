@@ -12,7 +12,7 @@ const HID = require('node-hid');
 var socket;
 
 // Array used to transmit selected axis
-const axischars = "XYZA";
+const axischars = "XYZABC";
 
 // initialize buttons to nothing pressed;
 var prevButtons = [0, 0];
