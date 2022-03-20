@@ -40,7 +40,7 @@ var store = {
 };
 
 // which com port are we using
-var port_in_use;
+var myport;
 
 // Initialize CNCjs client and connect to server
 const generateAccessToken = function (payload, secret, expiration) {
@@ -115,16 +115,16 @@ socket.on('serialport:list', function (portlist) {
     // Check to see if a port is in use
     for (const portitem in portlist) {
         if (portlist[portitem].inuse) {
-            port_in_use = portlist[portitem].port;
+            myport = portlist[portitem].port;
             break;
         }
     }
 
     // If no port in use is found, default to options.port
-    if (!port_in_use) port_in_use = options.port;
+    if (!myport) myport = options.port;
 
     // baud and controller are required?
-    socket.emit('open', port_in_use, {
+    socket.emit('open', myport, {
         baudrate: Number(options.baudrate),
         controllerType: options.controllerType
     });
@@ -578,7 +578,7 @@ function Send_Button(myGCode) {
     } else {
         // Append new line just in case (no harm with empty lines)
         console.log(myGCode);
-        socket.emit('write',port_in_use, myGCode + "\n");
+        socket.emit('write',myport, myGCode + "\n");
     }
 }
 
@@ -599,7 +599,7 @@ function doProbeZ() {
     if (config.DruRunProbeZ) {
         console.log(config.ProbeZ);
     } else {
-        socket.emit("write", port_in_use, config.ProbeZ+'\n');
+        socket.emit("write", myport, config.ProbeZ+'\n');
     }
 }
 
@@ -618,7 +618,7 @@ function doJog(myGCode) {
     if (config.DryRunJog) {
         console.log(myGCode);
     } else {
-        socket.emit("write", port_in_use, myGCode+'\n');
+        socket.emit("write", myport, myGCode+'\n');
     }
 }
 
