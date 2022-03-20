@@ -5,7 +5,7 @@ const path = require('path');
 const io = require('socket.io-client');
 const jwt = require('jsonwebtoken');
 const get = require('lodash.get');
-const config = require('./xhcrc');
+const {config, options} = require('./xhcrc');
 const HID = require('node-hid');
 
 // socket to CNCjs
@@ -28,16 +28,6 @@ var buff = new Buffer.alloc(21);
 buff[0] = 0xFE;
 buff[1] = 0xFD;
 buff[2] = 0x04;
-
-var options = {
-    // secret: program.secret,
-    port: 'COM4',
-    baudrate: 115200,
-    socketAddress: 'localhost',
-    socketPort: 8000,
-    controllerType: "Grbl",
-    accessTokenLifetime: "30d"
-};
 
 // CNCjs information
 var store = {
