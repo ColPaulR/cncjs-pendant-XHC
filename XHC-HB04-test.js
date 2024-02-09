@@ -5,8 +5,18 @@ const path = require('path');
 const io = require('socket.io-client');
 const jwt = require('jsonwebtoken');
 const get = require('lodash.get');
-//const {config, options} = require('./xhcrc');
 const HID = require('node-hid');
+
+
+// Read .rc file if it exists; exit otherwise
+try
+{
+    config = JSON.parse(fs.readFileSync('./.xhcrc', 'utf8'));
+} catch (err)
+{
+    console.error(err);
+    process.exit(1);
+}
 
 // socket to CNCjs
 var socket;
@@ -29,9 +39,6 @@ buff[0] = 0xFE;
 buff[1] = 0xFD;
 buff[2] = 0x04;
 
-
-var axis_coordinates = {1.0, 2.0, 3.0};
-
 // USB Output device
 var dev_USB_OUT;
 
@@ -46,13 +53,15 @@ var dev_USB_IN;
 
 if (devices.length > 1) {
     // Windows finds multiple HID devices for single XHC-HB04. 1 is input device and other is output device
-    for (iLooper = 0; iLooper < devices.length; iLooper++) {
+    for (iLooper = 0; iLooper < devices.length; iLooper++)
+    {
+        // console.log(devices[iLooper].path);
         // This works for 1 windows setup. Not sure if it is portable
-        if (devices[iLooper].path.includes("col01")) {
+        if (devices[iLooper].path.includes("Col01")) {
             dev_USB_IN = new HID.HID(devices[iLooper].path);
         }
 
-        if (devices[iLooper].path.includes("col02")) {
+        if (devices[iLooper].path.includes("Col02")) {
             dev_USB_OUT = new HID.HID(devices[iLooper].path);
         }
     }
@@ -63,11 +72,11 @@ if (devices.length > 1) {
 }
 
 if (!dev_USB_IN) {
-    console.log('USB Pendant not found');
+    console.log('USB Pendant not found for in');
     process.exit(1);
 }
 if (!dev_USB_OUT) {
-    console.log('USB Pendant not found');
+    console.log('USB Pendant not found for out');
     process.exit(1);
 }
 
@@ -85,7 +94,7 @@ dev_USB_IN.on('data', function (data) {
     parseButtonData(data);
 });
 
-xhc_set_display(
+xhc_set_display([1.234, 2.345, 3.456]);
 
 function xhc_encode_float(v, buff_offset) {
     // Make integer part fraction into unsigned integer number
@@ -114,19 +123,22 @@ function xhc_set_display(pos) {
     // Format the display data into a buffer
     var DispAxis=pos;
 
-        buff[3] |= 0x80;
+ 
+    // Set display to step and machine coordinates
+    buff[3] = 0x01;
 
-    // Set display to step
-    buff[3] |= 0x01;
+    // Set display to continous and machine coordinates
+    buff[3] = 0x0;
 
-    if (DispAxis.length < 1) {
+    if (DispAxis.length < 1)
+    {
         return;
     }
 
     // Update XYZ - assumes axis selector is not axis 4-6
-    xhc_encode_float(DispAxis['x'], 4);
-    xhc_encode_float(DispAxis['y'], 8);
-    xhc_encode_float(DispAxis['z'], 12);
+    xhc_encode_float(DispAxis[0], 4);
+    xhc_encode_float(DispAxis[1], 8);
+    xhc_encode_float(DispAxis[2], 12);
 
     // Packetize buffer
     var packets = Buffer.allocUnsafe(8);
@@ -139,7 +151,7 @@ function xhc_set_display(pos) {
         // Copy 7 bytes into packets[1:7]
         buff.copy(packets, 1, iIndex, iIndex + 7);
         // Move index to beginning of next 7 bytes
-        iIndex += 7;
+        iIndex += 7;    
 
         // send packets
         dev_USB_OUT.sendFeatureReport(packets);
@@ -424,8 +436,8 @@ function doButton(newButtons, iButton, feedknob) {
         case 16:
             // Do Macro 10
             // console.log("Macro 10");
-            // Toggle between machine and work coordinates
             config.WorkPos = !config.WorkPos;
+            // Toggle between machine and work coordinates
             break;
         default:
     }
