@@ -37,7 +37,7 @@ var buff = new Buffer.alloc(21);
 // Set fixed headers that never get changed
 buff[0] = 0xFE;
 buff[1] = 0xFD;
-buff[2] = 0x04;
+buff[2] = 0x08;
 
 // USB Output device
 var dev_USB_OUT;
@@ -55,10 +55,10 @@ if (devices.length > 1) {
     // Windows finds multiple HID devices for single XHC-HB04. 1 is input device and other is output device
     for (iLooper = 0; iLooper < devices.length; iLooper++)
     {
-        // console.log(devices[iLooper].path);
+        console.log(devices[iLooper].path);
         // This works for 1 windows setup. Not sure if it is portable
         if (devices[iLooper].path.includes("Col01")) {
-            dev_USB_IN = new HID.HID(devices[iLooper].path);
+	   dev_USB_IN = new HID.HID(devices[iLooper].path);
         }
 
         if (devices[iLooper].path.includes("Col02")) {
@@ -94,7 +94,7 @@ dev_USB_IN.on('data', function (data) {
     parseButtonData(data);
 });
 
-xhc_set_display([1.234, 2.345, 3.456]);
+xhc_set_display([2.345, 3.456, 1.234]);
 
 function xhc_encode_float(v, buff_offset) {
     // Make integer part fraction into unsigned integer number
@@ -152,6 +152,8 @@ function xhc_set_display(pos) {
         buff.copy(packets, 1, iIndex, iIndex + 7);
         // Move index to beginning of next 7 bytes
         iIndex += 7;    
+
+	console.log(packets.toString('hex'));
 
         // send packets
         dev_USB_OUT.sendFeatureReport(packets);
